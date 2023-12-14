@@ -101,7 +101,7 @@ window.onload = function () {
 
 function moverPassaro(evento) {
     // Verifica se a tecla pressionada é a barra de espaço, seta para cima ou tecla X
-    if (evento.code == "Space" || evento.code == "ArrowUp" || evento.code == "KeyX") {
+    if (evento.code == "ArrowUp" || evento.code == "KeyX") {
         // Ajusta a velocidade vertical para simular um salto
         velocidadeY = -6;
 
@@ -143,7 +143,7 @@ function atualizar() {
 
         // Verifica se o pássaro passou pelo cano
         if (!cano.passou && passaro.x > cano.x + cano.largura) {
-            pontuacao += aposta * 0.005; // Incrementa a pontuação por meio ponto
+            pontuacao += aposta * 0.05; // Incrementa a pontuação por meio ponto
             cano.passou = true; // Marca que o pássaro já passou por esse cano
         }
 
