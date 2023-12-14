@@ -32,80 +32,71 @@ let imagemCanoInferior; // Imagem do cano inferior a ser carregada
 // Configurações de física
 let velocidadeX = -2; // Velocidade de movimento dos canos para a esquerda
 let velocidadeY = 0; // Velocidade de salto do pássaro
-let fatorVelocidade = 0;
 let gravidade = 0.4; // Gravidade aplicada ao pássaro
 
 let jogoEncerrado = false; // Indica se o jogo está encerrado
-let jogoComecou = false;
-let pontuacao = 0; // Pontuação do jogador4
+let pontuacao = 0; // Pontuação do jogador
 
-let nomeUsuario;
-let aposta = 0;
-let resultadoAposta = 0;
-let incrementaAposta = 0.4 % aposta;
-let pontos = 0
-let inclinacaoPassaro = 0;
-
+let valorAposta;
+let aposta;
 // Aguarda até que a página HTML seja totalmente carregada antes de executar o código
 window.onload = function () {
-    // Solicita que o usuário digite algo antes de iniciar o jogo
-    nomeUsuario = prompt("Digite seu nome:");
-    aposta = prompt("Digite a quantia que quer apostar:")
+    // Obtém a referência do elemento do tabuleiro no HTML usando o ID "tabuleiro"
+    tabuleiro = document.getElementById("tabuleiro");
 
-    if (aposta >= 50) {
-        fatorVelocidade = 1000;
-    } else if (aposta >= 100) {
-        fatorVelocidade = 500;
-    } else{
-        fatorVelocidade = 1500;
+    // Define a altura e largura do tabuleiro com base nas variáveis predefinidas
+    tabuleiro.height = alturaTabuleiro;
+    tabuleiro.width = larguraTabuleiro;
+
+    // Obtém o contexto de desenho 2D do tabuleiro
+    contexto = tabuleiro.getContext("2d"); // Usado para desenhar no tabuleiro
+
+    // Desenha a imagem do pássaro no tabuleiro quando ela é carregada
+    imagemPassaro = new Image(); //Construtor padrão para criar objetos de imagem
+    imagemPassaro.src = "assets/flappybird.png"; //Define o PNG da imagem
+    imagemPassaro.onload = function () {
+        contexto.drawImage(imagemPassaro, passaro.x, passaro.y, passaro.largura, passaro.altura);
     }
 
-    // Verifica se o usuário inseriu um nome
-    if (nomeUsuario !== null && nomeUsuario !== "") {
-        // Obtém a referência do elemento do tabuleiro no HTML usando o ID "tabuleiro"
-        tabuleiro = document.getElementById("tabuleiro");
 
-        // Define a altura e largura do tabuleiro com base nas variáveis predefinidas
-        tabuleiro.height = alturaTabuleiro;
-        tabuleiro.width = larguraTabuleiro;
+    // Carrega a imagem do cano superior
+    imagemCanoSuperior = new Image();
+    imagemCanoSuperior.src = "assets/cano-alto.png";
 
-        // Obtém o contexto de desenho 2D do tabuleiro
-        contexto = tabuleiro.getContext("2d"); // Usado para desenhar no tabuleiro
+    // Carrega a imagem do cano inferior
+    imagemCanoInferior = new Image();
+    imagemCanoInferior.src = "assets/cano-baixo.png";
 
-        // Desenha a imagem do pássaro no tabuleiro quando ela é carregada
-        imagemPassaro = new Image(); //Construtor padrão para criar objetos de imagem
-        imagemPassaro.src = "assets/flappybird.png"; //Define o PNG da imagem
-        imagemPassaro.onload = function () {
-            contexto.drawImage(imagemPassaro, passaro.x, passaro.y, passaro.largura, passaro.altura);
+    const form = document.querySelector('.formulario');
+    //botaoIniciar.addEventListener('click', () => {
+
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        valorAposta = document.querySelector('#aposta');
+        aposta = valorAposta.value.trim();
+        console.log("valor digitado: ", aposta);
+        // Inicia o loop de atualização do jogo usando requestAnimationFrame
+        requestAnimationFrame(atualizar);
+
+        // Gera novos canos a cada 1.5 segundos usando setInterval
+        if(aposta < 100){
+            setInterval(gerarCanos, 1500);
+        }else if(aposta < 200){
+            setInterval(gerarCanos, 1200);
+            velocidadeX = -3;
+            velocidadeY = -4;
+        }else{
+            setInterval(gerarCanos, 900);
+            velocidadeX = -4;
+            velocidadeY = -3;
         }
 
-        // Carrega a imagem do cano superior
-        imagemCanoSuperior = new Image();
-        imagemCanoSuperior.src = "assets/cano-alto.png";
+        // Adiciona um ouvinte de evento para responder às teclas pressionadas
+        document.addEventListener("keydown", moverPassaro);
+    });
+        
+    //});
 
-        // Carrega a imagem do cano inferior
-        imagemCanoInferior = new Image();
-        imagemCanoInferior.src = "assets/cano-baixo.png";
-
-        document.addEventListener("keydown", function(evento){
-            if(evento.code == "Space" && jogoComecou == false){
-                jogoComecou = true;                
-
-                // Inicia o loop de atualização do jogo usando requestAnimationFrame
-                requestAnimationFrame(atualizar);
-
-                // Gera novos canos a cada 1.5 segundos usando setInterval
-                setInterval(gerarCanos, fatorVelocidade);
-
-                // Adiciona um ouvinte de evento para responder às teclas pressionadas
-                document.addEventListener("keydown", moverPassaro);
-                // Adicione um ouvinte de evento para a tecla R
-                document.addEventListener("keydown", reiniciarJogo); 
-            }
-        });
-    } else {
-        alert("Nome inválido. Recarregue a página para tentar novamente.");
-    }   
 }
 
 function moverPassaro(evento) {
@@ -113,7 +104,7 @@ function moverPassaro(evento) {
     if (evento.code == "Space" || evento.code == "ArrowUp" || evento.code == "KeyX") {
         // Ajusta a velocidade vertical para simular um salto
         velocidadeY = -6;
-        inclinacaoPassaro = -60;
+
     }
 }
 
@@ -122,11 +113,8 @@ function atualizar() {
     requestAnimationFrame(atualizar);
 
     if (jogoEncerrado) {
-        contexto.font = "45px sans-serif";
-        contexto.fillText("FIM DE JOGO", 30, alturaTabuleiro/2);
-        contexto.font = "20px sans-serif";
-        contexto.fillText("Pressione R para reiniciar", 60, alturaTabuleiro/2 + 25);
-        contexto.fillText("Você conseguiu R$ " + resultadoAposta, 65, alturaTabuleiro/2 + 50);
+        contexto.fillText("VALOR GANHO", 5, 100);
+        contexto.fillText("R$"+pontuacao.toFixed(1), 40, 150);
         return;
     }
 
@@ -137,22 +125,11 @@ function atualizar() {
     // Aumenta a velocidade vertical do pássaro aplicando a força da gravidade
     velocidadeY += gravidade;
 
-    passaro.y = Math.max(passaro.y + velocidadeY, 0);
+    // Atualiza a posição vertical do pássaro com base na velocidade
+    passaro.y = Math.max(passaro.y + velocidadeY, 0); // Aplica a gravidade à posição Y atual do pássaro, limitando a posição Y ao topo do canvas
 
-    contexto.save();
-
-    // Move e inclina o contexto para a posição e ângulo do pássaro
-    contexto.translate(passaro.x + passaro.largura / 2, passaro.y + passaro.altura / 2);
-    contexto.rotate((Math.PI / 180) * inclinacaoPassaro);
-
-    // Desenha a imagem do pássaro na nova posição e inclinação
-    contexto.drawImage(imagemPassaro, -passaro.largura / 2, -passaro.altura / 2, passaro.largura, passaro.altura);
-
-    // Restaura o estado do contexto para que as próximas renderizações não sejam inclinadas
-    contexto.restore();
-
-    // Redefine a inclinação para 0 após o desenho
-    inclinacaoPassaro = 0;
+    // Desenha a imagem do pássaro na nova posição
+    contexto.drawImage(imagemPassaro, passaro.x, passaro.y, passaro.largura, passaro.altura);
 
     // Itera sobre os canos presentes no arrayCanos
     for (let i = 0; i < arrayCanos.length; i++) {
@@ -166,19 +143,13 @@ function atualizar() {
 
         // Verifica se o pássaro passou pelo cano
         if (!cano.passou && passaro.x > cano.x + cano.largura) {
-            pontuacao += 0.5; // Incrementa a pontuação por meio ponto
-            pontos = pontuacao -(incrementaAposta + pontuacao);
+            pontuacao += aposta * 0.005; // Incrementa a pontuação por meio ponto
             cano.passou = true; // Marca que o pássaro já passou por esse cano
         }
 
         // Verifica se há colisão entre o pássaro e o cano
         if (detectarColisao(passaro, cano)) {
             jogoEncerrado = true; // Marca que o jogo está encerrado em caso de colisão
-        }
-
-        // Verifica se o passaro saiu da tela
-        if (passaro.y > 640){
-            jogoEncerrado = true;
         }
     }
 
@@ -189,30 +160,9 @@ function atualizar() {
 
     // Pontuação
     contexto.fillStyle = "white";
-    contexto.font = "25px sans-serif";
-    contexto.fillText("Pontuação: " + pontuacao, 10, 35);
-    contexto.fillText("Saldo: R$ " + pontos, 10, 70)
-}
+    contexto.font = "45px sans-serif";
+    contexto.fillText(pontuacao, 5, 45);
 
-function reiniciarJogo(evento) {
-    // Verifica se morreu
-    if (jogoEncerrado === true){
-        // Verifica se a tecla pressionada é a tecla R
-        if (evento.code == "KeyR") {
-            // Reinicia as variáveis do jogo
-            reiniciarVariaveis();
-        }
-    }
-}
-
-function reiniciarVariaveis() {
-    jogoEncerrado = false;
-    pontuacao = 0;
-    resultadoAposta = 0;
-    pontos = 0;
-    passaro.y = posicaoYPassaro;
-    arrayCanos = [];
-    velocidadeY = 0;
 }
 
 function gerarCanos() {
@@ -250,6 +200,7 @@ function gerarCanos() {
     // Adiciona o cano inferior ao array de canos
     arrayCanos.push(canoInferior);
 }
+
 
 // Função para detectar colisão entre dois objetos retangulares (objetoA e objetoB)
 function detectarColisao(passaro, cano) {
